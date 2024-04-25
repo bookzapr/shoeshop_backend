@@ -3,16 +3,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const app = express();
 const { routeNotFound } = require("./middleware/routeNotFound.js");
-
-const corsOptions = {
-  origin: [
-    "https://dadashop-frontend.vercel.app/",
-    "http://localhost:3000/",
-    "https://dadashop-frontend.vercel.app/item-shop/",
-  ],
-  credentials: true,
-  optionsSuccessStatus: 200,
-};
+const { shoeRoute } = require("./routes/shoeRoute");
 
 app.use(bodyParser.json());
 
@@ -24,7 +15,7 @@ app.use(cors());
 //   next();
 // });
 
-// app.use("/api/v1/user-balance", userBalanceRoute);
+app.use("/api/v1", shoeRoute);
 
 app.use(routeNotFound);
 
