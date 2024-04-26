@@ -1,4 +1,4 @@
-const Shoe = require("../models/shoe");
+const Shoe = require("../models/Shoe");
 const sharp = require("sharp");
 const multer = require("multer");
 

@@ -17,6 +17,10 @@ app.use(cors());
 
 app.use("/api/v1", shoeRoute);
 
+app.get("/health-check", (req, res) => {
+  res.send("Everything is working fine");
+});
+
 app.use(routeNotFound);
 
 module.exports = app;
