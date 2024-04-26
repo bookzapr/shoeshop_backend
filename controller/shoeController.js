@@ -48,11 +48,11 @@ const getAllShoes = async (req, res) => {
 
     const shoes = await Shoe.find(query).skip(startIndex).limit(limit);
 
-    shoes.map((shoe) => {
-      shoe.colors = shoe.colors[0];
-    });
+    // shoes.map((shoe) => {
+    //   shoe.colors = shoe.colors[0];
+    // });
 
-    console.log(shoes);
+    // console.log(shoes);
 
     res.status(200).json({
       success: true,
@@ -183,7 +183,7 @@ const addColor = async (req, res) => {
 
 const createShoe = async (req, res) => {
   try {
-    const { brand, model, gender, price } = req.body;
+    const { brand, model, gender, price, type } = req.body;
 
     if (!brand || !price) {
       return res.status(400).json({
@@ -205,6 +205,7 @@ const createShoe = async (req, res) => {
       model,
       price,
       gender,
+      type,
       colors: [],
     });
 
@@ -223,16 +224,35 @@ const createShoe = async (req, res) => {
   }
 };
 
+const deleteShoe = async (req, res) => {
+  try {
+    const shoe = await Shoe.findById(req.params.id);
+    if (!shoe) {
+      return res.status(404).json({ success: false, error: "Shoe not found" });
+    }
+
+    await shoe.deleteOne({});
+    return res.status(200).json({
+      success: true,
+      message: "Delete Item Successfully",
+      data: shoe,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, error: "Server error" });
+  }
+};
+
 const getSingleShoe = async (req, res) => {
   try {
     const shoe = await Shoe.findById(req.params.id);
     if (!shoe) {
       return res.status(404).json({ success: false, error: "Shoe not found" });
     }
-    res.status(200).json({ success: true, data: shoe });
+    return res.status(200).json({ success: true, data: shoe });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, error: "Server error" });
+    return res.status(500).json({ success: false, error: "Server error" });
   }
 };
 
@@ -241,4 +261,5 @@ module.exports = {
   getSingleShoe,
   createShoe,
   addColor,
+  deleteShoe,
 };

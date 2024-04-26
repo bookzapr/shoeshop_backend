@@ -4,6 +4,7 @@ const {
   getSingleShoe,
   createShoe,
   addColor,
+  deleteShoe,
 } = require("../controller/shoeController");
 const { verifyAccessToken } = require("../middleware/verifyAccessToken");
 
@@ -21,5 +22,7 @@ router.post("/shoes", createShoe);
 router.post("/shoes/:shoeId", upload.single("image"), addColor);
 
 router.get("/shoes/:id", getSingleShoe);
+
+router.get("/shoes/:id", deleteShoe);
 
 module.exports = { shoeRoute: router };
