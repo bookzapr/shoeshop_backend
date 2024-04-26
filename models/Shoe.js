@@ -21,10 +21,6 @@ const colorSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  image: {
-    data: Buffer,
-    contentType: String,
-  },
   sizes: [sizeSchema],
 });
 
@@ -67,5 +63,9 @@ const shoeSchema = new mongoose.Schema({
 });
 
 const Shoe = mongoose.model("Shoe", shoeSchema);
+const Color = mongoose.model("Color", colorSchema);
 
-module.exports = Shoe;
+module.exports = {
+  Shoe,
+  Color,
+};

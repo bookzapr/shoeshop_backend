@@ -1,4 +1,6 @@
-const Shoe = require("../models/Shoe");
+const { Shoe, Color } = require("../models/Shoe");
+const Image = require("../models/Image");
+
 const sharp = require("sharp");
 const multer = require("multer");
 
@@ -63,6 +65,64 @@ const getAllShoes = async (req, res) => {
   }
 };
 
+// const addColor = async (req, res) => {
+//   try {
+//     const { shoeId } = req.params;
+//     const { name, sizes, hex } = req.body;
+//     const shoe = await Shoe.findOne({ _id: shoeId });
+
+//     if (!shoe) {
+//       return res.status(404).json({
+//         success: false,
+//         error: "Shoe not found",
+//       });
+//     }
+
+//     for (let color of shoe.colors) {
+//       if (color.name.toUpperCase() === name.toUpperCase()) {
+//         return res.status(409).json({
+//           success: false,
+//           error: "This color already exists",
+//         });
+//       }
+//     }
+
+//     const buffer = req.file.buffer;
+//     const webpData = await sharp(buffer)
+//       .resize(1080)
+//       .webp({ quality: 100 })
+//       .toBuffer();
+
+//     const color = {
+//       name,
+//       image: {
+//         data: webpData,
+//         contentType: "image/webp",
+//       },
+//       hex,
+//       sizes: JSON.parse(sizes),
+//     };
+
+//     if (!shoe.colors) {
+//       shoe.colors = [];
+//     }
+
+//     shoe.colors.push(color);
+//     await shoe.save();
+
+//     return res.status(200).json({
+//       success: true,
+//       data: shoe,
+//     });
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(500).json({
+//       success: false,
+//       error: "Internal Server Error: " + err.message,
+//     });
+//   }
+// };
+
 const addColor = async (req, res) => {
   try {
     const { shoeId } = req.params;
@@ -91,22 +151,22 @@ const addColor = async (req, res) => {
       .webp({ quality: 100 })
       .toBuffer();
 
-    const color = {
+    const color = new Color({
       name,
-      image: {
-        data: webpData,
-        contentType: "image/webp",
-      },
       hex,
       sizes: JSON.parse(sizes),
-    };
-
-    if (!shoe.colors) {
-      shoe.colors = [];
-    }
+    });
 
     shoe.colors.push(color);
     await shoe.save();
+
+    const image = new Image({
+      imageId: color._id,
+      data: webpData,
+      contentType: "image/webp",
+    });
+
+    await image.save();
 
     return res.status(200).json({
       success: true,
