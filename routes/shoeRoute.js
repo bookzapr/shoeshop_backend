@@ -3,8 +3,12 @@ const {
   getAllShoes,
   getSingleShoe,
   createShoe,
+  updateShoe,
   addColor,
+  updateColor,
+  deleteColor,
   deleteShoe,
+  getAllBrands,
 } = require("../controller/shoeController");
 const { verifyAccessToken } = require("../middleware/verifyAccessToken");
 
@@ -19,10 +23,20 @@ router.get("/shoes", getAllShoes);
 
 router.post("/shoes", createShoe);
 
-router.post("/shoes/:shoeId", upload.single("image"), addColor);
-
 router.get("/shoes/:id", getSingleShoe);
 
+router.put("/shoes/:id", updateShoe);
+
 router.get("/shoes/:id", deleteShoe);
+
+router.post("/shoes/:shoeId", upload.single("image"), addColor);
+
+router.post("/shoes/:shoeId/colors", addColor);
+
+router.put("/colors/:colorId", updateColor);
+
+router.delete("/colors/:colorId", deleteColor);
+
+router.get("/brands", getAllBrands);
 
 module.exports = { shoeRoute: router };
