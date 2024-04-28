@@ -29,7 +29,7 @@ router.get("/shoes/:id", getSingleShoe);
 
 router.put("/shoes/:id", updateShoe);
 
-router.get("/shoes/:id", deleteShoe);
+router.delete("/shoes/:id", deleteShoe);
 
 router.post("/shoes/:shoeId", upload.single("image"), addColor);
 
