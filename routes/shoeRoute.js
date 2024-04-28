@@ -43,6 +43,8 @@ router.delete("/shoes/:shoeId/colors/:colorId", deleteColor);
 
 router.get("/shoes/:shoeId/colors/:colorId", getColor);
 
+// router.get("/shoes/:shoeId/colors/:colorId/sizes");
+
 router.get("/brands", getAllBrands);
 
 module.exports = { shoeRoute: router };

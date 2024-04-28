@@ -46,6 +46,9 @@ const getAllShoes = async (req, res) => {
       query["colors.sizes.size"] = parseFloat(size);
     }
 
+    const totalCount = await Shoe.countDocuments(query);
+    const total_pages = Math.ceil(totalCount / length);
+
     const shoes = await Shoe.find(query).skip(startIndex).limit(limit).lean();
 
     shoes.forEach((shoe) => {
@@ -60,6 +63,7 @@ const getAllShoes = async (req, res) => {
       success: true,
       data: shoes,
       length: shoes.length,
+      total_pages: total_pages,
     });
   } catch (err) {
     console.error(err);
@@ -118,64 +122,6 @@ const getAllColors = async (req, res) => {
     res.status(500).json({ success: false, error: "Internal Server Error" });
   }
 };
-
-// const addColor = async (req, res) => {
-//   try {
-//     const { shoeId } = req.params;
-//     const { name, sizes, hex } = req.body;
-//     const shoe = await Shoe.findOne({ _id: shoeId });
-
-//     if (!shoe) {
-//       return res.status(404).json({
-//         success: false,
-//         error: "Shoe not found",
-//       });
-//     }
-
-//     for (let color of shoe.colors) {
-//       if (color.name.toUpperCase() === name.toUpperCase()) {
-//         return res.status(409).json({
-//           success: false,
-//           error: "This color already exists",
-//         });
-//       }
-//     }
-
-//     const buffer = req.file.buffer;
-//     const webpData = await sharp(buffer)
-//       .resize(1080)
-//       .webp({ quality: 100 })
-//       .toBuffer();
-
-//     const color = {
-//       name,
-//       image: {
-//         data: webpData,
-//         contentType: "image/webp",
-//       },
-//       hex,
-//       sizes: JSON.parse(sizes),
-//     };
-
-//     if (!shoe.colors) {
-//       shoe.colors = [];
-//     }
-
-//     shoe.colors.push(color);
-//     await shoe.save();
-
-//     return res.status(200).json({
-//       success: true,
-//       data: shoe,
-//     });
-//   } catch (err) {
-//     console.error(err);
-//     return res.status(500).json({
-//       success: false,
-//       error: "Internal Server Error: " + err.message,
-//     });
-//   }
-// };
 
 const addColor = async (req, res) => {
   try {
@@ -298,7 +244,7 @@ const deleteColor = async (req, res) => {
 
 const createShoe = async (req, res) => {
   try {
-    const { brand, model, gender, price, type } = req.body;
+    const { brand, model, gender, price, type, description } = req.body;
 
     if (!brand || !price) {
       return res.status(400).json({
