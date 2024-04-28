@@ -9,6 +9,8 @@ const {
   deleteColor,
   deleteShoe,
   getAllBrands,
+  getAllColors,
+  getColor,
 } = require("../controller/shoeController");
 const { verifyAccessToken } = require("../middleware/verifyAccessToken");
 
@@ -31,11 +33,15 @@ router.get("/shoes/:id", deleteShoe);
 
 router.post("/shoes/:shoeId", upload.single("image"), addColor);
 
+router.get("/shoes/:shoeId/colors", getAllColors);
+
 router.post("/shoes/:shoeId/colors", addColor);
 
-router.put("/colors/:colorId", updateColor);
+router.put("/shoes/:shoeId/colors/:colorId", updateColor);
 
-router.delete("/colors/:colorId", deleteColor);
+router.delete("/shoes/:shoeId/colors/:colorId", deleteColor);
+
+router.get("/shoes/:shoeId/colors/:colorId", getColor);
 
 router.get("/brands", getAllBrands);
 

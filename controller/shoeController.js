@@ -12,7 +12,7 @@ const getAllShoes = async (req, res) => {
       brand,
       gender,
       type,
-      colorName,
+      color,
       minPrice,
       maxPrice,
       size,
@@ -26,19 +26,15 @@ const getAllShoes = async (req, res) => {
     if (brand) {
       query.brand = brand;
     }
-
     if (gender) {
       query.gender = gender;
     }
-
     if (type) {
       query.type = type;
     }
-
-    if (colorName) {
-      query["colors.name"] = colorName;
+    if (color) {
+      query["colors.name"] = { $regex: new RegExp(color, "i") }; // Case insensitive search
     }
-
     if (minPrice && maxPrice) {
       query.price = { $gte: Number(minPrice), $lte: Number(maxPrice) };
     } else if (minPrice) {
@@ -46,28 +42,76 @@ const getAllShoes = async (req, res) => {
     } else if (maxPrice) {
       query.price = { $lte: Number(maxPrice) };
     }
-
     if (size) {
       query["colors.sizes.size"] = parseFloat(size);
     }
 
     const shoes = await Shoe.find(query).skip(startIndex).limit(limit).lean();
 
-    if (colorName || size) {
-      shoes.forEach((shoe) => {
-        shoe.colors = shoe.colors.filter((color) => {
-          return (
-            (!colorName || color.name === colorName) &&
-            (!size || color.sizes.some((s) => s.size === parseFloat(size)))
-          );
-        });
-      });
-    }
+    shoes.forEach((shoe) => {
+      shoe.total_quantity = shoe.colors.reduce(
+        (acc, color) =>
+          acc + color.sizes.reduce((acc, size) => acc + size.quantity, 0),
+        0
+      );
+    });
 
     res.status(200).json({
       success: true,
       data: shoes,
       length: shoes.length,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+};
+
+const getColor = async (req, res) => {
+  try {
+    const { shoeId, colorId } = req.params;
+    const shoe = await Shoe.findById(shoeId).lean();
+    if (!shoe) {
+      return res.status(404).json({ success: false, error: "Shoe not found" });
+    }
+
+    const color = shoe.colors.find((c) => c._id.toString() === colorId);
+    if (!color) {
+      return res.status(404).json({ success: false, error: "Color not found" });
+    }
+
+    color.total_quantity = color.sizes.reduce(
+      (acc, size) => acc + size.quantity,
+      0
+    );
+
+    res.status(200).json({
+      success: true,
+      data: color,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+};
+
+const getAllColors = async (req, res) => {
+  try {
+    const { shoeId } = req.params;
+    const shoe = await Shoe.findById(shoeId).lean();
+
+    if (!shoe) {
+      return res.status(404).json({ success: false, error: "Shoe not found" });
+    }
+
+    const colorsWithQuantities = shoe.colors.map((color) => ({
+      ...color,
+      total_quantity: color.sizes.reduce((sum, size) => sum + size.quantity, 0),
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: colorsWithQuantities,
     });
   } catch (err) {
     console.error(err);
@@ -324,6 +368,13 @@ const getSingleShoe = async (req, res) => {
     if (!shoe) {
       return res.status(404).json({ success: false, error: "Shoe not found" });
     }
+    shoe.total_quantity = shoe.colors.reduce((acc, color) => {
+      const colorQuantity = color.sizes.reduce(
+        (acc, size) => acc + size.quantity,
+        0
+      );
+      return acc + colorQuantity;
+    }, 0);
     return res.status(200).json({ success: true, data: shoe });
   } catch (err) {
     console.error(err);
@@ -405,4 +456,6 @@ module.exports = {
   deleteShoe,
   updateShoe,
   getAllBrands,
+  getColor,
+  getAllColors,
 };
