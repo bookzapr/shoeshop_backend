@@ -56,7 +56,13 @@ const loginAuth = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      data: { access_token: access_token },
+      data: {
+        access_token: access_token,
+        userId: foundUser._id,
+        email: foundUser.email,
+        isAdmin: foundUser.isAdmin,
+        displayName: email.split("@")[0],
+      },
       message: "Login successfully",
     });
   } catch (error) {
