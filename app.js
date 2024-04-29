@@ -5,6 +5,7 @@ const app = express();
 const { routeNotFound } = require("./middleware/routeNotFound.js");
 const { shoeRoute } = require("./routes/shoeRoute");
 const Image = require("./models/Image.js");
+const { authRoute } = require("./routes/authRoutes.js");
 
 app.use(bodyParser.json());
 
@@ -17,6 +18,7 @@ app.use(cors());
 // });
 
 app.use("/api/v1", shoeRoute);
+app.use("/api/v1/auth", authRoute);
 
 app.get("/api/v1/images/:imageId", async (req, res) => {
   try {
