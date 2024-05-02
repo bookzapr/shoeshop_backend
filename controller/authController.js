@@ -8,14 +8,6 @@ const { ACCESS_TOKEN_SECRET } = require("../util/var");
 const loginAuth = async (req, res) => {
   const { email, password } = req.body;
 
-  //   const hashpass = await bcrypt.hash("admindada123", 10);
-
-  //   await User.create({
-  //     email: "dada@gmail.com",
-  //     password: hashpass,
-  //     isAdmin: true,
-  //   });
-
   try {
     if (!email || !password) {
       res.status(404).json({
@@ -61,7 +53,7 @@ const loginAuth = async (req, res) => {
         userId: foundUser._id,
         email: foundUser.email,
         isAdmin: foundUser.isAdmin,
-        displayName: email.split("@")[0],
+        displayName: email.split("@")[0] || email,
       },
       message: "Login successfully",
     });
@@ -74,7 +66,7 @@ const loginAuth = async (req, res) => {
 };
 
 const createUser = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, displayName } = req.body;
   console.log(email);
 
   if (!email || !password) {
@@ -90,6 +82,7 @@ const createUser = async (req, res) => {
       email: email,
       password: hashedPassword,
       isAdmin: false,
+      displayName: email.split("@")[0] || email,
     });
 
     const savedUser = await newUser.save();
@@ -106,8 +99,26 @@ const createUser = async (req, res) => {
   }
 };
 
+const getAllUser = async (req, res) => {
+  try {
+    const users = await User.find({});
+
+    console.log(users);
+
+    res.status(200).json({
+      success: true,
+      data: users,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to update user: " + error.message,
+    });
+  }
+};
+
 const updateUser = async (req, res) => {
-  const { email, newEmail, newPassword, newIsAdmin } = req.body;
+  const { email, newEmail, newPassword } = req.body;
 
   if (!email) {
     return res.status(400).json({
@@ -116,10 +127,11 @@ const updateUser = async (req, res) => {
     });
   }
 
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
   const updateData = {};
   if (newEmail) updateData.email = newEmail;
-  if (newPassword) updateData.password = newPassword;
-  if (newIsAdmin !== undefined) updateData.isAdmin = newIsAdmin;
+  if (newPassword) updateData.password = hashedPassword;
 
   try {
     const updatedUser = await User.findOneAndUpdate(
@@ -148,6 +160,39 @@ const updateUser = async (req, res) => {
   }
 };
 
+const toggleUserAdmin = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const user = await User.findOne({ _id: userId });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    user.isAdmin = !user.isAdmin;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: `User admin status toggled to ${user.isAdmin}`,
+      data: {
+        userId: user._id,
+        email: user.email,
+        isAdmin: user.isAdmin,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to toggle user admin status: " + error.message,
+    });
+  }
+};
+
 const authenticateAuth = async (req, res) => {
   res.status(200).json({
     success: true,
@@ -160,9 +205,69 @@ const authenticateAuth = async (req, res) => {
   });
 };
 
+const deleteUser = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const result = await User.findByIdAndDelete(userId);
+    if (!result) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete user: " + error.message,
+    });
+  }
+};
+
+const getSingleUser = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        _id: user._id,
+        displayName: user.displayName,
+        isAdmin: user.isAdmin,
+        email: user.email,
+      },
+      message: "User retrieved successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve user: " + error.message,
+    });
+  }
+};
+
 module.exports = {
   loginAuth,
   authenticateAuth,
   createUser,
   updateUser,
+  toggleUserAdmin,
+  getAllUser,
+  deleteUser,
+  getSingleUser,
 };

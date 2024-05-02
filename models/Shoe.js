@@ -68,8 +68,10 @@ const shoeSchema = new mongoose.Schema({
 
 const Shoe = mongoose.model("Shoe", shoeSchema);
 const Color = mongoose.model("Color", colorSchema);
+const Size = mongoose.model("Size", sizeSchema);
 
 module.exports = {
   Shoe,
   Color,
+  Size,
 };

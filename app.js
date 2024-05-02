@@ -1,23 +1,21 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const Image = require("./models/Image.js");
 const app = express();
 const { routeNotFound } = require("./middleware/routeNotFound.js");
 const { shoeRoute } = require("./routes/shoeRoute");
-const Image = require("./models/Image.js");
 const { authRoute } = require("./routes/authRoutes.js");
+const { colorRoute } = require("./routes/colorRoute.js");
+const { sizeRoute } = require("./routes/sizeRoute.js");
 
 app.use(bodyParser.json());
 
 app.use(cors());
 
-// app.all("*", function (req, res, next) {
-//   res.header("Access-Control-Allow-Origin", "*");
-//   res.header("Access-Control-Allow-Headers", "X-Requested-With");
-//   next();
-// });
-
 app.use("/api/v1", shoeRoute);
+app.use("/api/v1", colorRoute);
+app.use("/api/v1", sizeRoute);
 app.use("/api/v1/auth", authRoute);
 
 app.get("/api/v1/images/:imageId", async (req, res) => {

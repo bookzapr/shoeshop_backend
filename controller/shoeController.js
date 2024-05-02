@@ -1,4 +1,4 @@
-const { Shoe, Color } = require("../models/Shoe");
+const { Shoe, Color, Size } = require("../models/Shoe");
 const Image = require("../models/Image");
 
 const sharp = require("sharp");
