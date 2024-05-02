@@ -18,7 +18,7 @@ router.get("/users", getAllUser);
 router.get("/users/:userId", getSingleUser);
 router.delete("/users/:userId", deleteUser);
 router.get("/users/:userId/toggle", toggleUserAdmin);
-router.put("/users", updateUser);
+router.put("/users/:userId", updateUser);
 router.post("/login", loginAuth);
 router.get("/", verifyAccessToken, authenticateAuth);
 

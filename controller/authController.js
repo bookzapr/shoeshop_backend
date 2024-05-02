@@ -118,24 +118,36 @@ const getAllUser = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-  const { email, newEmail, newPassword } = req.body;
+  const { userId } = req.params;
+  const { newEmail, newPassword } = req.body;
 
-  if (!email) {
-    return res.status(400).json({
+  if (!newEmail && !newPassword) {
+    res.status(404).json({
       success: false,
-      message: "Current email must be provided",
+      message: "Email or password are required",
+    });
+  }
+
+  const user = await User.findById(userId);
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
     });
   }
 
   const hashedPassword = await bcrypt.hash(newPassword, 10);
 
   const updateData = {};
-  if (newEmail) updateData.email = newEmail;
+  if (newEmail) {
+    updateData.email = newEmail;
+    updateData.displayName = newEmail.split("@")[0] || newEmail;
+  }
   if (newPassword) updateData.password = hashedPassword;
 
   try {
     const updatedUser = await User.findOneAndUpdate(
-      { email: email },
+      { _id: user._id },
       { $set: updateData },
       { new: true }
     );
