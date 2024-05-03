@@ -119,7 +119,7 @@ const getAllUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   const { userId } = req.params;
-  const { newEmail, newPassword } = req.body;
+  const { newEmail, newPassword, newName } = req.body;
 
   if (!newEmail && !newPassword) {
     res.status(404).json({

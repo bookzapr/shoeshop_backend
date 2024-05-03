@@ -8,6 +8,7 @@ const { shoeRoute } = require("./routes/shoeRoute");
 const { authRoute } = require("./routes/authRoutes.js");
 const { colorRoute } = require("./routes/colorRoute.js");
 const { sizeRoute } = require("./routes/sizeRoute.js");
+const { orderRoute } = require("./routes/orderRoute.js");
 
 app.use(bodyParser.json());
 
@@ -16,7 +17,8 @@ app.use(cors());
 app.use("/api/v1", shoeRoute);
 app.use("/api/v1", colorRoute);
 app.use("/api/v1", sizeRoute);
-app.use("/api/v1/auth", authRoute);
+app.use("/api/v1", orderRoute);
+app.use("/api/v1", authRoute);
 
 app.get("/api/v1/images/:imageId", async (req, res) => {
   try {

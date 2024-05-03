@@ -13,13 +13,13 @@ const { verifyAccessToken } = require("../middleware/verifyAccessToken");
 
 const router = express.Router();
 
-router.post("/users", createUser);
-router.get("/users", getAllUser);
-router.get("/users/:userId", getSingleUser);
-router.delete("/users/:userId", deleteUser);
-router.get("/users/:userId/toggle", toggleUserAdmin);
-router.put("/users/:userId", updateUser);
-router.post("/login", loginAuth);
-router.get("/", verifyAccessToken, authenticateAuth);
+router.post("/auth/users", createUser);
+router.get("/auth/users", getAllUser);
+router.get("/auth/users/:userId", getSingleUser);
+router.delete("/auth/users/:userId", deleteUser);
+router.get("/auth/users/:userId/toggle", toggleUserAdmin);
+router.put("/auth/users/:userId", updateUser);
+router.post("/auth/login", loginAuth);
+router.get("/auth/", verifyAccessToken, authenticateAuth);
 
 module.exports = { authRoute: router };
