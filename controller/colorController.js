@@ -121,15 +121,14 @@ const addColor = async (req, res) => {
 const updateColor = async (req, res) => {
   try {
     const { shoeId, colorId } = req.params;
-    const { name, hex } = req.body;
+    const { name, hex, sizes } = req.body;
     const { shoe, color } = await findShoeColor(shoeId, colorId);
 
     console.log(name);
 
     color.name = name || color.name;
     color.hex = hex || color.hex;
-
-    console.log(color.name, color.hex);
+    color.sizes = sizes || color.sizes;
 
     await shoe.save();
 
