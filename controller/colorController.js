@@ -64,6 +64,12 @@ const addColor = async (req, res) => {
 
     const name = "";
     const hex = "#FFFFFF";
+    const sizes = [
+      {
+        size: 3,
+        quantity: 0,
+      },
+    ];
 
     const shoe = await Shoe.findOne({ _id: shoeId });
 
@@ -85,7 +91,7 @@ const addColor = async (req, res) => {
       if (color.name.toUpperCase() === "") {
         return res.status(409).json({
           success: false,
-          error: "Please edited the empty color before proceed",
+          error: `Please complete the empty color with ID ${color._id} or name ${color.name} before create new`,
         });
       }
     }
@@ -93,6 +99,7 @@ const addColor = async (req, res) => {
     const color = new Color({
       name,
       hex,
+      sizes,
     });
 
     shoe.colors.push(color);
