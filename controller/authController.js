@@ -121,12 +121,12 @@ const updateUser = async (req, res) => {
   const { userId } = req.params;
   const { newEmail, newPassword, newName, newIsAdmin } = req.body;
 
-  if (!newEmail && !newPassword) {
-    res.status(404).json({
-      success: false,
-      message: "Email or password are required",
-    });
-  }
+  // if (!newEmail) {
+  //   res.status(404).json({
+  //     success: false,
+  //     message: "Email are required",
+  //   });
+  // }
 
   const user = await User.findById(userId);
   if (!user) {
