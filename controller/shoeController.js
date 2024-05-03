@@ -49,6 +49,9 @@ const getAllShoes = async (req, res) => {
     const totalCount = await Shoe.countDocuments(query);
     const total_pages = Math.ceil(totalCount / length);
 
+    let total_lengths = await Shoe.find({});
+    total_lengths = total_lengths.length;
+
     const shoes = await Shoe.find(query).skip(startIndex).limit(limit).lean();
 
     shoes.forEach((shoe) => {
@@ -64,6 +67,7 @@ const getAllShoes = async (req, res) => {
       data: shoes,
       length: shoes.length,
       total_pages: total_pages,
+      total_lengths,
     });
   } catch (err) {
     console.error(err);
