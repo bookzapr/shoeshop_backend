@@ -5,6 +5,7 @@ const {
   deleteColor,
   getAllColors,
   getColor,
+  createImage,
 } = require("../controller/colorController");
 const { verifyAccessToken } = require("../middleware/verifyAccessToken");
 
@@ -25,5 +26,7 @@ router.get("/shoes/:shoeId/colors", getAllColors);
 router.put("/shoes/:shoeId/colors/:colorId", updateColor);
 
 router.delete("/shoes/:shoeId/colors/:colorId", deleteColor);
+
+router.post("/images/:colorId", upload.single("image"), createImage);
 
 module.exports = { colorRoute: router };

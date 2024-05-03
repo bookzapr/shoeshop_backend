@@ -39,11 +39,11 @@ async function findOrder(orderId) {
   return { order };
 }
 
-async function findAndValidateShoe(shoeId, colorName, size, quantity) {
+async function findAndValidateShoe(shoeId, colorId, size, quantity) {
   const shoe = await Shoe.findById(shoeId);
   if (!shoe) throw new Error("Shoe not found");
 
-  const color = shoe.colors.find((c) => c.name === colorName);
+  const color = shoe.colors.find((c) => c._id == colorId);
   if (!color) throw new Error("Color not found");
 
   const sizeEntry = color.sizes.find((s) => s.size === size);

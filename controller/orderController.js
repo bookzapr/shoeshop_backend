@@ -182,6 +182,11 @@ const createOwnOrder = async (req, res) => {
         item.price = shoe.price;
         totalPrice += item.price * quantity;
 
+        (item.shoeModel = shoe.model),
+          (item.shoeBrand = shoe.brand),
+          (item.colorId = colorEntry._id);
+        item.color = colorEntry.name;
+
         sizeEntry.quantity -= quantity;
         await shoe.save({ session });
       }

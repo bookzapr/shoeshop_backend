@@ -6,8 +6,21 @@ const orderItemSchema = new mongoose.Schema({
     ref: "Shoe",
     required: true,
   },
+  shoeModel: {
+    type: String,
+    required: true,
+  },
+  shoeBrand: {
+    type: String,
+    required: true,
+  },
   color: {
     type: String,
+    required: true,
+  },
+  colorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Color",
     required: true,
   },
   size: {
@@ -34,7 +47,7 @@ const orderSchema = new mongoose.Schema({
   items: [orderItemSchema],
   status: {
     type: String,
-    enum: ["Pending", "Processing", "Shipping", "Delivered"],
+    enum: ["Pending", "Processing", "Shipping", "Completed", "Cancelled"],
     default: "Pending",
   },
   createdAt: {

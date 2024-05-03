@@ -60,7 +60,11 @@ const getAllColors = async (req, res) => {
 const addColor = async (req, res) => {
   try {
     const { shoeId } = req.params;
-    const { name, sizes, hex } = req.body;
+    // const { name, sizes, hex } = req.body;
+
+    const name = "";
+    const hex = "#FFFFFF";
+
     const shoe = await Shoe.findOne({ _id: shoeId });
 
     if (!shoe) {
@@ -71,36 +75,28 @@ const addColor = async (req, res) => {
     }
 
     for (let color of shoe.colors) {
-      if (color.name.toUpperCase() === name.toUpperCase()) {
+      // if (color.name.toUpperCase() === name.toUpperCase()) {
+      //   return res.status(409).json({
+      //     success: false,
+      //     error: "This color already exists",
+      //   });
+      // }
+
+      if (color.name.toUpperCase() === "") {
         return res.status(409).json({
           success: false,
-          error: "This color already exists",
+          error: "Please edited the empty color before proceed",
         });
       }
     }
 
-    const buffer = req.file.buffer;
-    const webpData = await sharp(buffer)
-      .resize(1080)
-      .webp({ quality: 100 })
-      .toBuffer();
-
     const color = new Color({
       name,
       hex,
-      sizes: JSON.parse(sizes),
     });
 
     shoe.colors.push(color);
     await shoe.save();
-
-    const image = new Image({
-      imageId: color._id,
-      data: webpData,
-      contentType: "image/webp",
-    });
-
-    await image.save();
 
     return res.status(200).json({
       success: true,
@@ -147,6 +143,53 @@ const updateColor = async (req, res) => {
   }
 };
 
+const createImage = async (req, res) => {
+  try {
+    const { colorId } = req.params;
+    let image = await Image.findOne({ imageId: colorId });
+    if (!image) {
+      image = new Image({ imageId: colorId });
+    }
+
+    sharp(req.file.buffer)
+      .resize(1080)
+      .webp({ quality: 100 })
+      .toBuffer()
+      .then(async (webpData) => {
+        image.data = webpData;
+        image.contentType = "image/webp";
+
+        await image.save();
+        res.json({
+          success: true,
+          colorId: colorId,
+          message: "Image uploaded successfully!",
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+        let status = 500;
+        if (error.message.includes("not found")) {
+          status = 404;
+        }
+        res.status(status).json({
+          success: false,
+          error: "Internal Server Error: " + error.message,
+        });
+      });
+  } catch (error) {
+    console.error(error);
+    let status = 500;
+    if (err.message.includes("not found")) {
+      status = 404;
+    }
+    res.status(status).json({
+      success: false,
+      error: "Internal Server Error: " + error.message,
+    });
+  }
+};
+
 const deleteColor = async (req, res) => {
   try {
     const { shoeId, colorId } = req.params;
@@ -179,4 +222,5 @@ module.exports = {
   updateColor,
   getColor,
   getAllColors,
+  createImage,
 };

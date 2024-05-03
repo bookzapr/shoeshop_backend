@@ -15,11 +15,9 @@ const sizeSchema = new mongoose.Schema({
 const colorSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
   },
   hex: {
     type: String,
-    required: true,
   },
   sizes: [sizeSchema],
 });
