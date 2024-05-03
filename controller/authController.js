@@ -119,7 +119,7 @@ const getAllUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   const { userId } = req.params;
-  const { newEmail, newPassword, newName } = req.body;
+  const { newEmail, newPassword, newName, newIsAdmin } = req.body;
 
   if (!newEmail && !newPassword) {
     res.status(404).json({
@@ -139,11 +139,16 @@ const updateUser = async (req, res) => {
   const updateData = {};
   if (newEmail) {
     updateData.email = newEmail;
-    updateData.displayName = newEmail.split("@")[0] || newEmail;
   }
   if (newPassword) {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     updateData.password = hashedPassword;
+  }
+  if (newName) {
+    updateData.displayName = newName;
+  }
+  if (newIsAdmin != undefined) {
+    updateData.isAdmin = newIsAdmin;
   }
 
   try {
