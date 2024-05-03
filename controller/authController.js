@@ -136,14 +136,15 @@ const updateUser = async (req, res) => {
     });
   }
 
-  const hashedPassword = await bcrypt.hash(newPassword, 10);
-
   const updateData = {};
   if (newEmail) {
     updateData.email = newEmail;
     updateData.displayName = newEmail.split("@")[0] || newEmail;
   }
-  if (newPassword) updateData.password = hashedPassword;
+  if (newPassword) {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    updateData.password = hashedPassword;
+  }
 
   try {
     const updatedUser = await User.findOneAndUpdate(
