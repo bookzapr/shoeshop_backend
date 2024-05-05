@@ -178,8 +178,8 @@ const getOwnAllOrder = async (req, res) => {
 
   let query = "";
 
-  if (status.toLowerCase() && status.toLowerCase()) {
-    switch (status) {
+  if (status && status.toLowerCase()) {
+    switch (status.toLowerCase()) {
       case "pending":
         query = "Pending";
         break;
