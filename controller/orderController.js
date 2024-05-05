@@ -71,8 +71,11 @@ const getAllOrder = async (req, res) => {
       case "shipping":
         query = "Shipping";
         break;
-      case "delivered":
-        query = "Delivered";
+      case "completed":
+        query = "Completed";
+        break;
+      case "canceled":
+        query = "Canceled";
         break;
     }
   }
