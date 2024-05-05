@@ -178,7 +178,7 @@ const getOwnAllOrder = async (req, res) => {
 
   let query = "";
 
-  if (status && status.toLowerCase()) {
+  if (status.toLowerCase() && status.toLowerCase()) {
     switch (status) {
       case "pending":
         query = "Pending";
@@ -189,8 +189,11 @@ const getOwnAllOrder = async (req, res) => {
       case "shipping":
         query = "Shipping";
         break;
-      case "delivered":
-        query = "Delivered";
+      case "completed":
+        query = "Completed";
+        break;
+      case "canceled":
+        query = "Canceled";
         break;
     }
   }
