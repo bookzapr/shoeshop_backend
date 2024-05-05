@@ -37,6 +37,7 @@ const loginAuth = async (req, res) => {
       email: foundUser.email,
       userId: foundUser._id,
       isAdmin: foundUser.isAdmin,
+      displayName: foundUser.displayName,
     };
 
     const access_token = jwt.sign(userData, ACCESS_TOKEN_SECRET, {
@@ -219,6 +220,7 @@ const authenticateAuth = async (req, res) => {
       userId: req.userId,
       email: req.email,
       isAdmin: req.isAdmin,
+      displayName: req.displayName,
     },
   });
 };

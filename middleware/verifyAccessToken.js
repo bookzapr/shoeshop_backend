@@ -19,6 +19,7 @@ function verifyAccessToken(req, res, next) {
       req.isAdmin = userInfo.isAdmin;
       req.access_token = token;
       req.userId = userInfo.userId;
+      req.displayName = userInfo.displayName;
       //   req.userId = userInfo.userId;
 
       //   if (userInfo.email) {
