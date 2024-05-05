@@ -1,17 +1,9 @@
 const mongoose = require("mongoose");
 
-const orderItemSchema = new mongoose.Schema({
+const cartItemSchema = new mongoose.Schema({
   shoeId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Shoe",
-    required: true,
-  },
-  shoeModel: {
-    type: String,
-    required: true,
-  },
-  shoeBrand: {
-    type: String,
     required: true,
   },
   color: {
@@ -31,6 +23,10 @@ const orderItemSchema = new mongoose.Schema({
     type: Number,
     required: true,
     min: 1,
+    validate: {
+      validator: Number.isInteger,
+      message: "Quantity must be an integer.",
+    },
   },
   price: {
     type: Number,
@@ -38,32 +34,19 @@ const orderItemSchema = new mongoose.Schema({
   },
 });
 
-const orderSchema = new mongoose.Schema({
+const cartSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
   },
-  items: [orderItemSchema],
-  status: {
-    type: String,
-    enum: ["Pending", "Processing", "Shipping", "Completed", "Cancelled"],
-    default: "Pending",
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+  items: [cartItemSchema],
   updatedAt: {
     type: Date,
     default: Date.now,
   },
-  purchasedAt: {
-    type: Date,
-    // default: Date.now,
-  },
 });
 
-const Order = mongoose.model("Order", orderSchema);
+const Cart = mongoose.model("Cart", cartSchema);
 
-module.exports = Order;
+module.exports = { Cart };

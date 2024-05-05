@@ -6,14 +6,32 @@ const {
   findAndValidateShoe,
   findOrder,
 } = require("../middleware/findMiddleware");
+const { rejectOrder, acceptOrder } = require("../middleware/orderMiddleware");
 
 const mongoose = require("mongoose");
+const {
+  STRIPE_SECRET,
+  FRONTEND_URL,
+  BACKEND_URL,
+  STRIPE_WEBHOOK,
+} = require("../util/var");
+
+const stripe = require("stripe")(STRIPE_SECRET);
 
 const getSingleOrder = async (req, res) => {
   const { orderId } = req.params;
 
   try {
     const order = await findOrder(orderId);
+
+    if (!order || order.order.status == "Cancelled") {
+      return res.status(404).json({
+        success: false,
+        message: "This Order doesn't exist anymore",
+      });
+    }
+
+    // rejectOrder(order);
 
     res.status(200).json({
       success: true,
@@ -196,7 +214,7 @@ const createOwnOrder = async (req, res) => {
       await session.commitTransaction();
       session.endSession();
 
-      res.status(201).json({
+      res.status(303).json({
         success: true,
         message: "Order created successfully",
         order,
@@ -222,9 +240,197 @@ const createOwnOrder = async (req, res) => {
   }
 };
 
+const rejectOrderController = async (req, res) => {
+  const { orderId } = req.params;
+
+  try {
+    const order = await findOrder(orderId);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    await rejectOrder(order);
+
+    return res.status(200).json({
+      success: true,
+      message: "Order has been rejected and cancelled",
+      order: order,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to reject order due to internal server error",
+      error: error.message,
+    });
+  }
+};
+
+const checkoutOwnOrder = async (req, res) => {
+  try {
+    // const lineItems = order
+
+    const orderId = "663750400331caa252846d75";
+
+    const order = await Order.findById(orderId);
+
+    const lineItems = order.items.map((item) => {
+      return {
+        price_data: {
+          currency: "thb",
+          product_data: {
+            name: `${item.shoeBrand} ${item.shoeModel}`,
+            // description: item.description || "",
+            images: [`${BACKEND_URL}/api/v1/images/${item.colorId}`],
+          },
+          unit_amount: item.price * 100,
+        },
+        quantity: item.quantity,
+      };
+    });
+
+    const session = await stripe.checkout.sessions.create({
+      customer_email: "vee.sorav@gmail.com",
+      // payment_method_types: ["promptpay"],
+      payment_method_types: ["card"],
+      shipping_address_collection: {
+        allowed_countries: ["TH"],
+      },
+      line_items: lineItems,
+      mode: "payment",
+      success_url: `${FRONTEND_URL}/order-failed`,
+      cancel_url: `${FRONTEND_URL}/order-completed`,
+      metadata: {
+        orderId: orderId,
+      },
+    });
+
+    // res.redirect(303, session.url);
+    res.status(200).json({
+      success: true,
+      message: "Checkout Then Redirect Successfully",
+      redirectUrl: session.url,
+      order: order,
+    });
+  } catch (err) {
+    console.error(err.message);
+
+    // switch (err.type) {
+    //   case 'StripeCardError':
+    //     // A declined card error
+    //     err.message; // => e.g. "Your card's expiration year is invalid."
+    //     break;
+    //   case 'StripeRateLimitError':
+    //     // Too many requests made to the API too quickly
+    //     break;
+    //   case 'StripeInvalidRequestError':
+    //     // Invalid parameters were supplied to Stripe's API
+    //     break;
+    //   case 'StripeAPIError':
+    //     // An error occurred internally with Stripe's API
+    //     break;
+    //   case 'StripeConnectionError':
+    //     // Some kind of error occurred during the HTTPS communication
+    //     break;
+    //   case 'StripeAuthenticationError':
+    //     // You probably used an incorrect API key
+    //     break;
+    //   default:
+    //     // Handle any other types of unexpected errors
+    //     break;
+    // }
+  }
+};
+
+const orderWebHook = async (req, res) => {
+  const event = req.body;
+  try {
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object;
+      const orderId = session.metadata.orderId;
+
+      const order = await Order.findById(orderId);
+
+      if (!order) {
+        return res.status(404).json({
+          success: false,
+          message: `Order Not Found with Id : ${orderId}`,
+        });
+      }
+
+      console.log(order);
+
+      acceptOrder(order);
+
+      // status = pending
+      // before == purchasedAt
+
+      //accept order here
+      // create receipt model
+      // status = processing
+
+      //reject order
+      // status = canceled
+      // loop again and release quantity from items in order
+      // if size and quantity doesn't match just do nothing
+
+      return res.status(200).json({ success: true, order });
+    }
+  } catch (error) {
+    let status = 500;
+    if (
+      error.message.includes("not found") ||
+      error.message.includes("Insufficient")
+    ) {
+      status = 404;
+    }
+    res
+      .status(status)
+      .json({ success: false, error: "Webhook Error : " + error.message });
+  }
+};
+
+const acceptOrderController = async (req, res) => {
+  const { orderId } = req.params;
+
+  try {
+    const order = await findOrder(orderId);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    await acceptOrder(order);
+
+    return res.status(200).json({
+      success: true,
+      message: "Order has been successfully accepted",
+      order: order,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to accept order due to internal server error",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createOwnOrder,
   getOwnAllOrder,
   getAllOrder,
   getSingleOrder,
+  checkoutOwnOrder,
+  orderWebHook,
+  rejectOrderController,
+  acceptOrderController,
 };

@@ -59,11 +59,23 @@ async function findAndValidateShoe(shoeId, colorId, size, quantity) {
   return { shoe, color, sizeEntry };
 }
 
+async function findShoeForOrder(shoeId, colorId, size, quantity) {
+  const shoe = await Shoe.findById(shoeId);
+  if (!shoe) throw new Error("Shoe not found");
+
+  const color = shoe.colors.id(colorId);
+  if (!color) throw new Error("Color not found");
+
+  const sizeEntry = color.sizes.find((s) => s.size === size);
+
+  return { shoeEntry: shoe, colorEntry: color, sizeEntry, quantity };
+}
+
 module.exports = {
   findShoeColorSize,
   findShoeColor,
   findShoe,
   findAndValidateShoe,
-
+  findShoeForOrder,
   findOrder,
 };
