@@ -11,22 +11,22 @@ async function findOrder(orderId) {
   return { order };
 }
 
-async function acceptOrder(order) {
-  return { order };
-}
+// async function acceptOrder(order) {
+//   return { order };
+// }
 
 async function rejectOrder(order) {
-  for (const item of order.order.items) {
-    const { shoeId, colorId, size, quantity } = item;
-    const { shoeEntry, sizeEntry } = await findShoeForOrder(
-      shoeId,
-      colorId,
-      size,
-      quantity
-    );
-    sizeEntry.quantity += quantity;
-    await shoeEntry.save();
-  }
+  // for (const item of order.order.items) {
+  //   const { shoeId, colorId, size, quantity } = item;
+  //   const { shoeEntry, sizeEntry } = await findShoeForOrder(
+  //     shoeId,
+  //     colorId,
+  //     size,
+  //     quantity
+  //   );
+  //   sizeEntry.quantity += quantity;
+  //   await shoeEntry.save();
+  // }
 
   // await order.save();
   order.order.status = "Cancelled";
@@ -34,7 +34,7 @@ async function rejectOrder(order) {
   await order.order.save();
 }
 
-async function rejectOrder(order) {
+async function acceptOrder(order) {
   order.order.status = "Processing";
 
   await order.order.save();

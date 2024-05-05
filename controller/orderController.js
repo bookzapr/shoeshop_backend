@@ -338,9 +338,23 @@ const checkoutOwnOrder = async (req, res) => {
   try {
     // const lineItems = order
 
-    const orderId = "663750400331caa252846d75";
+    const { orderId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid order ID format" });
+    }
 
     const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
+    }
+
+    console.log(req);
 
     const lineItems = order.items.map((item) => {
       return {
@@ -373,7 +387,6 @@ const checkoutOwnOrder = async (req, res) => {
       },
     });
 
-    // res.redirect(303, session.url);
     res.status(200).json({
       success: true,
       message: "Checkout Then Redirect Successfully",
@@ -382,6 +395,10 @@ const checkoutOwnOrder = async (req, res) => {
     });
   } catch (err) {
     console.error(err.message);
+    res.status(500).json({
+      success: false,
+      message: "Something Wrong With Checkout Order",
+    });
 
     // switch (err.type) {
     //   case 'StripeCardError':

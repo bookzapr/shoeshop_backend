@@ -15,7 +15,7 @@ const router = express.Router();
 router.post("/orders", verifyAccessToken, createOwnOrder);
 router.get("/orders", verifyAccessToken, getOwnAllOrder);
 // router.get("/orders/:orderId/checkout", getOwnSingleOrder);
-router.get("/orders/:orderId/checkout", checkoutOwnOrder);
+router.get("/orders/:orderId/checkout", verifyAccessToken, checkoutOwnOrder);
 router.get("/orders/users/:userId", getAllOrder);
 router.get("/orders/all", getEveryOrder);
 router.get("/orders/:orderId", getSingleOrder);

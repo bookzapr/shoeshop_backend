@@ -158,10 +158,10 @@ const removeFromCart = async (req, res) => {
 
 const updateCart = async (req, res) => {
   const userId = req.userId;
-  const { itemId } = req.params;
-  const { newQuantity } = req.body;
+  const { cartItemId } = req.params;
+  const { quantity } = req.body;
 
-  if (!newQuantity || newQuantity < 1) {
+  if (!quantity || quantity < 1) {
     return res
       .status(400)
       .json({ success: false, message: "Invalid quantity provided." });
@@ -175,7 +175,7 @@ const updateCart = async (req, res) => {
         .json({ success: false, message: "Cart not found" });
     }
 
-    const itemIndex = cart.items.findIndex((item) => item.id === itemId);
+    const itemIndex = cart.items.findIndex((item) => item.id === cartItemId);
     if (itemIndex === -1) {
       return res
         .status(404)
@@ -205,14 +205,14 @@ const updateCart = async (req, res) => {
         .json({ success: false, message: "Size not found" });
     }
 
-    if (sizeEntry.quantity + item.quantity < newQuantity) {
+    if (sizeEntry.quantity + item.quantity < quantity) {
       return res
         .status(400)
         .json({ success: false, message: "Insufficient stock available" });
     }
 
-    sizeEntry.quantity += item.quantity - newQuantity;
-    item.quantity = newQuantity;
+    sizeEntry.quantity += item.quantity - quantity;
+    item.quantity = quantity;
 
     await shoe.save();
     await cart.save();
@@ -287,10 +287,7 @@ const getCarts = async (req, res) => {
   const userId = req.userId;
 
   try {
-    const carts = await Cart.find({ user: userId }).populate(
-      "items.shoeId",
-      "brand model price"
-    );
+    const carts = await Cart.find({ user: userId });
 
     if (!carts) {
       return res
