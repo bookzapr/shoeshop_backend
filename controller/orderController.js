@@ -60,7 +60,7 @@ const getAllOrder = async (req, res) => {
 
   let query = "";
 
-  if (status && status.toLowerCase()) {
+  if (status.toLowerCase() && status.toLowerCase()) {
     switch (status) {
       case "pending":
         query = "Pending";
@@ -91,6 +91,64 @@ const getAllOrder = async (req, res) => {
         .limit(limit);
     } else {
       orders = await Order.find({ user: userId }).skip(startIndex).limit(limit);
+    }
+
+    res.status(201).json({
+      success: true,
+      message: "Order created successfully",
+      orders,
+    });
+  } catch (err) {
+    console.error(err);
+    let status = 500;
+    if (
+      err.message.includes("not found") ||
+      err.message.includes("Insufficient")
+    ) {
+      status = 404;
+    }
+    res
+      .status(status)
+      .json({ success: false, error: "Internal Server Error: " + err.message });
+  }
+};
+
+const getEveryOrder = async (req, res) => {
+  const { page = 1, length = 10, status } = req.query;
+
+  let query = "";
+
+  if (status.toLowerCase() && status.toLowerCase()) {
+    switch (status) {
+      case "pending":
+        query = "Pending";
+        break;
+      case "processing":
+        query = "Processing";
+        break;
+      case "shipping":
+        query = "Shipping";
+        break;
+      case "completed":
+        query = "Completed";
+        break;
+      case "canceled":
+        query = "Canceled";
+        break;
+    }
+  }
+
+  const startIndex = (page - 1) * length;
+  const limit = parseInt(length);
+
+  try {
+    let orders;
+    if (query !== "") {
+      orders = await Order.find({ status: query })
+        .skip(startIndex)
+        .limit(limit);
+    } else {
+      orders = await Order.find({}).skip(startIndex).limit(limit);
     }
 
     res.status(201).json({
@@ -436,4 +494,5 @@ module.exports = {
   orderWebHook,
   rejectOrderController,
   acceptOrderController,
+  getEveryOrder,
 };

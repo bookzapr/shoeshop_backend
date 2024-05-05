@@ -6,6 +6,7 @@ const {
   getSingleOrder,
   checkoutOwnOrder,
   orderWebHook,
+  getEveryOrder,
 } = require("../controller/orderController");
 const { verifyAccessToken } = require("../middleware/verifyAccessToken");
 
@@ -16,6 +17,7 @@ router.get("/orders", verifyAccessToken, getOwnAllOrder);
 // router.get("/orders/:orderId/checkout", getOwnSingleOrder);
 router.get("/orders/:orderId/checkout", checkoutOwnOrder);
 router.get("/orders/users/:userId", getAllOrder);
+router.get("/orders/all", getEveryOrder);
 router.get("/orders/:orderId", getSingleOrder);
 router.post("/orders/webhook", orderWebHook);
 
