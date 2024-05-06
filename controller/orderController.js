@@ -385,8 +385,8 @@ const checkoutOwnOrder = async (req, res) => {
       },
       line_items: lineItems,
       mode: "payment",
-      success_url: `${FRONTEND_URL}/order-failed`,
-      cancel_url: `${FRONTEND_URL}/order-completed`,
+      success_url: `${FRONTEND_URL}/order-completed`,
+      cancel_url: `${FRONTEND_URL}/order-failed`,
       metadata: {
         orderId: orderId,
       },
