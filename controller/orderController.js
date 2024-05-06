@@ -2,6 +2,8 @@ const { Shoe, Color, Size } = require("../models/Shoe");
 
 const { Order } = require("../models/Order");
 
+const { User } = require("../models/User");
+
 const {
   findAndValidateShoe,
   findOrder,
@@ -340,6 +342,8 @@ const checkoutOwnOrder = async (req, res) => {
 
     const { orderId } = req.params;
 
+    // const { email } = req;
+
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
       return res
         .status(400)
@@ -361,6 +365,8 @@ const checkoutOwnOrder = async (req, res) => {
       });
     }
 
+    const user = await User.findById(req.userId);
+
     const lineItems = order.items.map((item) => {
       return {
         price_data: {
@@ -377,7 +383,7 @@ const checkoutOwnOrder = async (req, res) => {
     });
 
     const session = await stripe.checkout.sessions.create({
-      customer_email: "vee.sorav@gmail.com",
+      customer_email: user.email,
       // payment_method_types: ["promptpay"],
       payment_method_types: ["card"],
       shipping_address_collection: {
@@ -437,6 +443,10 @@ const orderWebHook = async (req, res) => {
   try {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
+
+      const address = session.shipping_details.address;
+      const name = session.shipping_details.name;
+      const email = session.customer_email;
       const orderId = session.metadata.orderId;
 
       const order = await Order.findById(orderId);
@@ -448,30 +458,28 @@ const orderWebHook = async (req, res) => {
         });
       }
 
-      // if () {
-      //   return res.status(404).json({
-      //     success: false,
-      //     message: `Order Not Found with Id : ${orderId}`,
-      //   });
-      // }
+      order.address = {
+        name,
+        email,
+        line1: address.line1,
+        line2: address.line2,
+        city: address.city,
+        postal_code: address.postal_code,
+        country: address.country,
+      };
 
-      // console.log(order);
+      order.status = "Processing";
 
-      // await acceptOrder(order);
+      await order.save();
 
-      // status = pending
-      // before == purchasedAt
-
-      //accept order here
-      // create receipt model
-      // status = processing
-
-      //reject order
-      // status = canceled
-      // loop again and release quantity from items in order
-      // if size and quantity doesn't match just do nothing
-
-      return res.status(200).json({ success: true, order }).end();
+      return res
+        .status(200)
+        .json({
+          success: true,
+          order,
+          message: "Order has been successfully accepted",
+        })
+        .end();
     }
   } catch (error) {
     let status = 500;

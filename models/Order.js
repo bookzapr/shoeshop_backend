@@ -38,6 +38,16 @@ const orderItemSchema = new mongoose.Schema({
   },
 });
 
+const addressSchema = new mongoose.Schema({
+  line1: { type: String },
+  line2: { type: String },
+  city: { type: String },
+  state: { type: String },
+  postal_code: { type: String },
+  country: { type: String, default: "TH" },
+  name: { type: String },
+});
+
 const orderSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
@@ -50,6 +60,7 @@ const orderSchema = new mongoose.Schema({
     enum: ["Pending", "Processing", "Shipping", "Completed", "Canceled"],
     default: "Pending",
   },
+  address: addressSchema,
   createdAt: {
     type: Date,
     default: Date.now,
