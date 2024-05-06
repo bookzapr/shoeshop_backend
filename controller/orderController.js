@@ -455,9 +455,9 @@ const orderWebHook = async (req, res) => {
       //   });
       // }
 
-      console.log(order);
+      // console.log(order);
 
-      await acceptOrder(order);
+      // await acceptOrder(order);
 
       // status = pending
       // before == purchasedAt
@@ -471,7 +471,7 @@ const orderWebHook = async (req, res) => {
       // loop again and release quantity from items in order
       // if size and quantity doesn't match just do nothing
 
-      return res.status(200).json({ success: true, order });
+      return res.status(200).json({ success: true, order }).end();
     }
   } catch (error) {
     let status = 500;

@@ -29,7 +29,11 @@ async function rejectOrder(order) {
   // }
 
   // await order.save();
+
+  console.log(order);
   order.order.status = "Cancelled";
+
+  console.log(order);
 
   await order.order.save();
 }
