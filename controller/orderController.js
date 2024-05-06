@@ -354,7 +354,12 @@ const checkoutOwnOrder = async (req, res) => {
         .json({ success: false, message: "Order not found" });
     }
 
-    console.log(req);
+    if (order.status != "Pending") {
+      return res.status(404).json({
+        success: false,
+        message: "Order status should be pending before making a checkout",
+      });
+    }
 
     const lineItems = order.items.map((item) => {
       return {
@@ -443,9 +448,16 @@ const orderWebHook = async (req, res) => {
         });
       }
 
+      // if () {
+      //   return res.status(404).json({
+      //     success: false,
+      //     message: `Order Not Found with Id : ${orderId}`,
+      //   });
+      // }
+
       console.log(order);
 
-      acceptOrder(order);
+      await acceptOrder(order);
 
       // status = pending
       // before == purchasedAt
@@ -505,6 +517,138 @@ const acceptOrderController = async (req, res) => {
   }
 };
 
+const cancelOrder = async (req, res) => {
+  const { orderId } = req.params;
+
+  if (!orderId) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Missing orderId in request" });
+  }
+
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const order = await Order.findById(orderId).session(session);
+
+    if (!order) {
+      await session.abortTransaction();
+      session.endSession();
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
+    }
+
+    if (order.status === "Canceled") {
+      await session.abortTransaction();
+      session.endSession();
+      return res
+        .status(400)
+        .json({ success: false, message: "Order is already canceled" });
+    }
+
+    order.status = "Canceled";
+
+    for (const item of order.items) {
+      const shoe = await Shoe.findById(item.shoeId).session(session);
+      if (shoe) {
+        shoe.quantity += item.quantity;
+        await shoe.save({ session });
+      }
+    }
+
+    await order.save({ session });
+    await session.commitTransaction();
+    session.endSession();
+    res.status(200).json({
+      success: true,
+      message: "Order was successfully canceled",
+      order,
+    });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    console.error("Failed to cancel order:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to cancel order",
+      error: error.toString(),
+    });
+  }
+};
+
+const updateOrderStatus = async (req, res) => {
+  const { orderId } = req.params;
+  const { status } = req.query;
+  if (!orderId || !status) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Missing order ID or new status." });
+  }
+
+  const validStatuses = [
+    "Pending",
+    "Processing",
+    "Shipped",
+    "Completed",
+    "Canceled",
+  ];
+  if (!validStatuses.includes(status)) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid status provided." });
+  }
+
+  try {
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found." });
+    }
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+      if (status === "Canceled" && order.status !== "Canceled") {
+        for (const item of order.items) {
+          const shoe = await Shoe.findById(item.shoeId).session(session);
+          if (shoe) {
+            shoe.quantity += item.quantity;
+            await shoe.save({ session });
+          }
+        }
+      }
+
+      order.status = status;
+      await order.save({ session });
+      await session.commitTransaction();
+      session.endSession();
+
+      res.status(200).json({
+        success: true,
+        message: `Order status updated to ${status} successfully.`,
+        order,
+      });
+    } catch (error) {
+      await session.abortTransaction();
+      session.endSession();
+      res.status(500).json({
+        success: false,
+        message: `Failed to update order status: ${error.message}`,
+        error: error.toString(),
+      });
+    }
+  } catch (error) {
+    console.error("Failed to update the order status:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update the order status due to an internal error.",
+      error: error.toString(),
+    });
+  }
+};
+
 module.exports = {
   createOwnOrder,
   getOwnAllOrder,
@@ -515,4 +659,5 @@ module.exports = {
   rejectOrderController,
   acceptOrderController,
   getEveryOrder,
+  updateOrderStatus,
 };
