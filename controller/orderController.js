@@ -589,7 +589,7 @@ const updateOrderStatus = async (req, res) => {
   const validStatuses = [
     "Pending",
     "Processing",
-    "Shipped",
+    "Shipping",
     "Completed",
     "Canceled",
   ];
