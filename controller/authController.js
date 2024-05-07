@@ -54,7 +54,7 @@ const loginAuth = async (req, res) => {
         userId: foundUser._id,
         email: foundUser.email,
         isAdmin: foundUser.isAdmin,
-        displayName: email.split("@")[0] || email,
+        displayName: foundUser.displayName,
       },
       message: "Login successfully",
     });
