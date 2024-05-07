@@ -43,7 +43,9 @@ const getAllShoes = async (req, res) => {
       query.price = { $lte: Number(maxPrice) };
     }
     if (size) {
-      query["colors.sizes.size"] = parseFloat(size);
+      query["colors.sizes"] = {
+        $elemMatch: { size: parseFloat(size), quantity: { $gt: 0 } },
+      };
     }
 
     const totalCount = await Shoe.countDocuments(query);
