@@ -120,7 +120,7 @@ const getEveryOrder = async (req, res) => {
 
   let query = "";
 
-  if (status.toLowerCase() && status.toLowerCase()) {
+  if (status && status.toLowerCase()) {
     switch (status) {
       case "pending":
         query = "Pending";

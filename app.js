@@ -89,4 +89,17 @@ app.get("/health-check", (req, res) => {
 
 app.use(routeNotFound);
 
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+
+  const errorStatus = err.status || 500;
+  const errorMessage = err.message || "Internal Server Error";
+
+  res.status(errorStatus).json({
+    success: false,
+    error: errorMessage,
+  });
+});
+
+
 module.exports = app;
